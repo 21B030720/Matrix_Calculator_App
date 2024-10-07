@@ -1,7 +1,4 @@
-# main.py
-
 import tkinter as tk
-from calculator import Calculator
 from matrix_calculator import MatrixCalculator
 
 

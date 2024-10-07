@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import messagebox
 import numpy as np
 
+
 class MatrixCalculator:
     def __init__(self, master):
         self.master = master
@@ -236,7 +237,8 @@ class MatrixCalculator:
             return
 
         if a_cols != b_rows:
-            messagebox.showerror("Dimension Mismatch", "For multiplication, the number of columns in Matrix A must equal the number of rows in Matrix B.")
+            messagebox.showerror("Dimension Mismatch",
+                                 "For multiplication, the number of columns in Matrix A must equal the number of rows in Matrix B.")
             return
 
         matrix_a = self.get_matrix(self.matrix_a_entries, a_rows, a_cols)
