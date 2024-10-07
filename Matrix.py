@@ -33,3 +33,27 @@ class Matrix:
                     result[i][j] += self.matrix[i][k] * other.matrix[k][j]
 
         return Matrix(result)
+
+    def LU_decomposition(self):
+        if self.rowLength != self.columnLength:
+            raise ValueError("LU-декомпозиция возможна только для квадратных матриц.")
+
+        L = [[0] * self.rowLength for _ in range(self.rowLength)]
+        U = [[0] * self.rowLength for _ in range(self.rowLength)]
+
+        for i in range(self.rowLength):
+            for j in range(i, self.rowLength):
+                sumUpper = sum(L[i][k] * U[k][j] for k in range(i))
+                U[i][j] = self.matrix[i][j] - sumUpper
+
+            for j in range(i, self.rowLength):
+                if i == j:
+                    L[i][i] = 1
+                else:
+                    sumLower = sum(L[j][k] * U[k][i] for k in range(i))
+                    L[j][i] = (self.matrix[j][i] - sumLower) / U[i][i]
+
+        return Matrix(L), Matrix(U)
+
+    def SVD_decomposition(self):
+        pass
