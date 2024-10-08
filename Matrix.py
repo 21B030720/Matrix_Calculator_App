@@ -57,3 +57,6 @@ class Matrix:
 
     def SVD_decomposition(self):
         pass
+
+    def __str__(self):
+        return '\n'.join(['\t'.join(map(str, row)) for row in self.matrix])
