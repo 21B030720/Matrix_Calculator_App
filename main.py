@@ -1,5 +1,5 @@
 import tkinter as tk
-from matrix_calculator import MatrixCalculator
+from MatrixCalculator import MatrixCalculator
 
 
 def main():
