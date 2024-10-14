@@ -4,6 +4,9 @@ class Matrix:
         self.rowLength = len(matrix)
         self.columnLength = len(matrix[0])
 
+    def __str__(self):
+        return "\n".join(["\t".join(map(str, row)) for row in self.matrix])
+
     def __add__(self, other):
         if self.rowLength != other.rowLength or self.columnLength != other.rowLength:
             raise ValueError("Матрицы должны быть одинакового размера для сложения.")

@@ -1,14 +1,15 @@
-# calculator.py
-
 import tkinter as tk
 from tkinter import messagebox
 import numpy as np
+from Matrix import Matrix
+from tkinter import simpledialog
+
 
 class MatrixCalculator:
     def __init__(self, master):
         self.master = master
         master.title("Matrix Calculator")
-        master.geometry("800x600")
+        master.geometry("900x700")
         master.resizable(False, False)
 
         # Define colors for better UI
@@ -52,8 +53,10 @@ class MatrixCalculator:
         self.b_cols_entry.grid(row=0, column=7, padx=5, pady=5)
 
         # Set Sizes Button
-        self.set_size_button = tk.Button(frame, text="Set Sizes", bg=self.button_color, fg=self.text_color,
-                                         command=self.set_sizes, width=10, height=1)
+        self.set_size_button = tk.Button(
+            frame, text="Set Sizes", bg=self.button_color, fg=self.text_color,
+            command=self.set_sizes, width=10, height=1
+        )
         self.set_size_button.grid(row=0, column=8, padx=10, pady=5)
 
     def set_sizes(self):
@@ -80,9 +83,9 @@ class MatrixCalculator:
 
     def clear_matrix_input_frames(self):
         """Clears existing matrix input frames."""
-        # Remove Matrix A and B Frames
+        # Remove all frames except the first one (size input frame)
         for widget in self.master.pack_slaves():
-            if isinstance(widget, tk.Frame) and widget != self.master.pack_slaves()[0]:
+            if isinstance(widget, tk.Frame) and widget not in [self.master.pack_slaves()[0]]:
                 widget.destroy()
         # Reset entries
         self.matrix_a_entries = []
@@ -131,21 +134,28 @@ class MatrixCalculator:
         frame = tk.Frame(self.master, bg=self.bg_color, pady=10)
         frame.pack()
 
-        add_button = tk.Button(frame, text="A + B", width=10, bg=self.button_color, fg=self.text_color,
-                               command=self.add_matrices)
-        add_button.grid(row=0, column=0, padx=10, pady=5)
+        # Clear any existing operation buttons to prevent duplication
+        for widget in frame.winfo_children():
+            widget.destroy()
 
-        subtract_button = tk.Button(frame, text="A - B", width=10, bg=self.button_color, fg=self.text_color,
-                                    command=self.subtract_matrices)
-        subtract_button.grid(row=0, column=1, padx=10, pady=5)
+        # Define button configurations
+        buttons = [
+            {"text": "A + B", "command": self.add_matrices},
+            {"text": "A - B", "command": self.subtract_matrices},
+            {"text": "A × B", "command": self.multiply_matrices},
+            {"text": "LU Decomposition", "command": self.lu_decomposition},
+            {"text": "Clear", "command": self.clear_all}
+        ]
 
-        multiply_button = tk.Button(frame, text="A × B", width=10, bg=self.button_color, fg=self.text_color,
-                                    command=self.multiply_matrices)
-        multiply_button.grid(row=0, column=2, padx=10, pady=5)
-
-        clear_button = tk.Button(frame, text="Clear", width=10, bg="#f44336", fg=self.text_color,
-                                 command=self.clear_all)
-        clear_button.grid(row=0, column=3, padx=10, pady=5)
+        # Arrange buttons in a grid
+        for idx, btn in enumerate(buttons):
+            button = tk.Button(
+                frame, text=btn["text"], width=18 if "LU" in btn["text"] else 10, 
+                bg=self.button_color if "Clear" not in btn["text"] else "#f44336",
+                fg=self.text_color,
+                command=btn["command"]
+            )
+            button.grid(row=0, column=idx, padx=10, pady=5)
 
     def create_result_frame(self):
         """Frame to display the result matrix."""
@@ -154,12 +164,12 @@ class MatrixCalculator:
 
         tk.Label(frame, text="Result", bg=self.bg_color, font=("Arial", 14, "bold")).pack()
 
-        self.result_text = tk.Text(frame, height=10, width=50, borderwidth=2, relief="ridge")
+        self.result_text = tk.Text(frame, height=15, width=80, borderwidth=2, relief="ridge")
         self.result_text.pack(padx=10, pady=10)
         self.result_text.config(state=tk.DISABLED)  # Make read-only
 
     def get_matrix(self, entries, rows, cols):
-        """Retrieve matrix data from entry fields."""
+        """Retrieve matrix data from entry fields and return a Matrix instance."""
         matrix = []
         for i in range(rows):
             row = []
@@ -168,11 +178,11 @@ class MatrixCalculator:
                 try:
                     num = float(val)
                 except ValueError:
-                    messagebox.showerror("Invalid Input", "Please enter valid numbers in the matrix.")
+                    messagebox.showerror("Invalid Input", "Пожалуйста, введите допустимые числа в матрицу.")
                     return None
                 row.append(num)
             matrix.append(row)
-        return np.array(matrix)
+        return Matrix(matrix)
 
     def add_matrices(self):
         """Add Matrix A and Matrix B."""
@@ -182,11 +192,11 @@ class MatrixCalculator:
         b_cols = len(self.matrix_b_entries[0]) if b_rows > 0 else 0
 
         if a_rows == 0 or b_rows == 0:
-            messagebox.showerror("Input Error", "Please set matrix sizes and enter matrix elements.")
+            messagebox.showerror("Input Error", "Пожалуйста, установите размеры матриц и введите элементы.")
             return
 
         if a_rows != b_rows or a_cols != b_cols:
-            messagebox.showerror("Dimension Mismatch", "For addition, both matrices must have the same dimensions.")
+            messagebox.showerror("Dimension Mismatch", "Для сложения матрицы должны иметь одинаковые размеры.")
             return
 
         matrix_a = self.get_matrix(self.matrix_a_entries, a_rows, a_cols)
@@ -196,8 +206,11 @@ class MatrixCalculator:
         if matrix_b is None:
             return
 
-        result = matrix_a + matrix_b
-        self.display_result(result)
+        try:
+            result = matrix_a + matrix_b
+            self.display_result(result)
+        except ValueError as ve:
+            messagebox.showerror("Error", str(ve))
 
     def subtract_matrices(self):
         """Subtract Matrix B from Matrix A."""
@@ -207,11 +220,11 @@ class MatrixCalculator:
         b_cols = len(self.matrix_b_entries[0]) if b_rows > 0 else 0
 
         if a_rows == 0 or b_rows == 0:
-            messagebox.showerror("Input Error", "Please set matrix sizes and enter matrix elements.")
+            messagebox.showerror("Input Error", "Пожалуйста, установите размеры матриц и введите элементы.")
             return
 
         if a_rows != b_rows or a_cols != b_cols:
-            messagebox.showerror("Dimension Mismatch", "For subtraction, both matrices must have the same dimensions.")
+            messagebox.showerror("Dimension Mismatch", "Для вычитания матрицы должны иметь одинаковые размеры.")
             return
 
         matrix_a = self.get_matrix(self.matrix_a_entries, a_rows, a_cols)
@@ -221,8 +234,11 @@ class MatrixCalculator:
         if matrix_b is None:
             return
 
-        result = matrix_a - matrix_b
-        self.display_result(result)
+        try:
+            result = matrix_a - matrix_b
+            self.display_result(result)
+        except ValueError as ve:
+            messagebox.showerror("Error", str(ve))
 
     def multiply_matrices(self):
         """Multiply Matrix A by Matrix B."""
@@ -232,11 +248,14 @@ class MatrixCalculator:
         b_cols = len(self.matrix_b_entries[0]) if b_rows > 0 else 0
 
         if a_rows == 0 or b_rows == 0:
-            messagebox.showerror("Input Error", "Please set matrix sizes and enter matrix elements.")
+            messagebox.showerror("Input Error", "Пожалуйста, установите размеры матриц и введите элементы.")
             return
 
         if a_cols != b_rows:
-            messagebox.showerror("Dimension Mismatch", "For multiplication, the number of columns in Matrix A must equal the number of rows in Matrix B.")
+            messagebox.showerror(
+                "Dimension Mismatch", 
+                "Для умножения количество столбцов матрицы A должно равняться количеству строк матрицы B."
+            )
             return
 
         matrix_a = self.get_matrix(self.matrix_a_entries, a_rows, a_cols)
@@ -246,16 +265,90 @@ class MatrixCalculator:
         if matrix_b is None:
             return
 
-        result = np.dot(matrix_a, matrix_b)
-        self.display_result(result)
+        try:
+            result = matrix_a * matrix_b
+            self.display_result(result)
+        except ValueError as ve:
+            messagebox.showerror("Error", str(ve))
 
-    def display_result(self, result):
+    def lu_decomposition(self):
+        """Perform LU decomposition on a selected matrix."""
+        # Ask user to select which matrix to decompose
+        choice = simpledialog.askstring("LU Decomposition", "Введите 'A' для матрицы A или 'B' для матрицы B:")
+
+        if choice is None:
+            return  # User cancelled
+
+        choice = choice.strip().upper()
+        if choice not in ['A', 'B']:
+            messagebox.showerror("Invalid Choice", "Пожалуйста, введите 'A' или 'B'.")
+            return
+
+        if choice == 'A':
+            matrix_entries = self.matrix_a_entries
+            matrix_label = "A"
+        else:
+            matrix_entries = self.matrix_b_entries
+            matrix_label = "B"
+
+        rows = len(matrix_entries)
+        cols = len(matrix_entries[0]) if rows > 0 else 0
+
+        if rows == 0:
+            messagebox.showerror("Input Error", f"Пожалуйста, установите размеры матрицы {matrix_label} и введите элементы.")
+            return
+
+        if rows != cols:
+            messagebox.showerror("Dimension Error", "LU-декомпозиция возможна только для квадратных матриц.")
+            return
+
+        matrix = self.get_matrix(matrix_entries, rows, cols)
+        if matrix is None:
+            return
+
+        try:
+            L, U = matrix.LU_decomposition()
+            self.display_lu_result(L, U, matrix_label)
+        except ZeroDivisionError as zde:
+            messagebox.showerror("LU Decomposition Error", str(zde))
+        except ValueError as ve:
+            messagebox.showerror("LU Decomposition Error", str(ve))
+
+    def display_lu_result(self, L, U, matrix_label):
+        """Display L and U matrices in a popup window."""
+        lu_window = tk.Toplevel(self.master)
+        lu_window.title(f"LU Decomposition of Matrix {matrix_label}")
+        lu_window.geometry("800x400")
+        lu_window.resizable(False, False)
+        lu_window.configure(bg=self.bg_color)
+
+        # Frame for L Matrix
+        frame_l = tk.Frame(lu_window, bg=self.bg_color, padx=10, pady=10)
+        frame_l.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        tk.Label(frame_l, text="L Matrix", bg=self.bg_color, font=("Arial", 12, "bold")).pack()
+
+        text_l = tk.Text(frame_l, height=15, width=40, borderwidth=2, relief="ridge")
+        text_l.pack(padx=5, pady=5)
+        text_l.insert(tk.END, str(L))
+        text_l.config(state=tk.DISABLED)
+
+        # Frame for U Matrix
+        frame_u = tk.Frame(lu_window, bg=self.bg_color, padx=10, pady=10)
+        frame_u.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+        tk.Label(frame_u, text="U Matrix", bg=self.bg_color, font=("Arial", 12, "bold")).pack()
+
+        text_u = tk.Text(frame_u, height=15, width=40, borderwidth=2, relief="ridge")
+        text_u.pack(padx=5, pady=5)
+        text_u.insert(tk.END, str(U))
+        text_u.config(state=tk.DISABLED)
+
+    def display_result(self, result_matrix):
         """Display the resulting matrix."""
         self.result_text.config(state=tk.NORMAL)
         self.result_text.delete(1.0, tk.END)
-        for row in result:
-            row_str = "\t".join([str(element) for element in row])
-            self.result_text.insert(tk.END, row_str + "\n")
+        self.result_text.insert(tk.END, str(result_matrix))
         self.result_text.config(state=tk.DISABLED)
 
     def clear_all(self):
