@@ -60,14 +60,16 @@ class Matrix:
 
     def QR_decomposition(self):
         Q = []
-        R = [[0] * self.columnLength for _ in range(self.columnLength)]  # Изменено на columnLength
+        R = [[0] * self.columnLength for _ in range(self.columnLength)]
 
         for j in range(self.columnLength):
             v = [self.matrix[i][j] for i in range(self.rowLength)]
 
+            # Проходим по всем вектором Q и вычитаем проекции
             for i in range(len(Q)):
                 q = Q[i]
                 projection = sum(q[k] * v[k] for k in range(self.rowLength))
+                R[i][j] = projection  # Сохраняем коэффициент проекции
                 v = [v[k] - projection * q[k] for k in range(self.rowLength)]
 
             norm = sum(x ** 2 for x in v) ** 0.5
@@ -75,40 +77,107 @@ class Matrix:
                 q = [x / norm for x in v]
                 Q.append(q)
 
-                for i in range(len(Q)):
-                    R[i][j] = sum(Q[i][k] * self.matrix[k][j] for k in range(self.rowLength))
+                # Устанавливаем R для текущего вектора q
+                R[len(Q) - 1][j] = norm  # Последняя строка соответствует новому q
 
         return Matrix(Q).transpose(), Matrix(R)
 
+    def rref(self):
+        lead = 0
+        for r in range(self.rowLength):
+            if lead >= self.columnLength:
+                return self
+
+            i = r
+            while self.matrix[i][lead] == 0:
+                i += 1
+                if i == self.rowLength:
+                    i = r
+                    lead += 1
+                    if lead == self.columnLength:
+                        return self
+            self.matrix[i], self.matrix[r] = self.matrix[r], self.matrix[i]
+
+            # Нормализуем ведущий элемент
+            lv = self.matrix[r][lead]
+            self.matrix[r] = [mrx / float(lv) for mrx in self.matrix[r]]
+
+            for i in range(self.rowLength):
+                if i != r:
+                    lv = self.matrix[i][lead]
+                    self.matrix[i] = [iv - lv * rv for rv, iv in zip(self.matrix[r], self.matrix[i])]
+
+            lead += 1
+
+        return self
+
+    def extract_eigenVector(self):
+        solutions = [0] * self.columnLength
+
+        for row in self.matrix:
+            leading = None
+            for j in range(self.columnLength):
+                if row[j] != 0:
+                    leading = j
+                    break
+
+            if leading is not None:
+                solutions[leading] = row[-1]
+
+        return solutions
+
+    def get_eigenValues(self):
+        R = self.QR_decomposition()[1].matrix
+        return [R[i][i] for i in range(len(R))]
+
+    def get_eigenVectors(self):
+        eigenVectors = []
+        for eigenValue in self.get_eigenValues():
+            dA = Matrix([[self.matrix[i][j] - (eigenValue if i == j else 0) for j in range(self.columnLength)] for i in range(self.rowLength)])
+            dA = dA.rref()
+            eigenVector = dA.extract_eigenVector()
+            eigenVectors.append(eigenVector)
+        return eigenVectors
+
     def SVD_decomposition(self):
         AtA = self.transpose() * self
-        eigenValues, eigenVectors = self.eigen_decomposition(AtA)
+        AAt = self * self.transpose()
 
-        V = Matrix(eigenVectors).transpose()
+        singularValues = AtA.get_eigenValues()
+        Sigma = [[0] * len(singularValues) for _ in range(len(singularValues))]
+        for i in range(len(singularValues)):
+            Sigma[i][i] = singularValues[i] ** 0.5
 
-        Sigma = [[0] * self.columnLength for _ in range(self.rowLength)]
-        for i in range(len(eigenValues)):
-            Sigma[i][i] = eigenValues[i] ** 0.5
+        U = Matrix(AAt.get_eigenVectors()).transpose()
+        Vt = Matrix(AtA.get_eigenVectors())
 
-        U = self * V * Matrix(Sigma)
+        return U, Matrix(Sigma), Vt
 
-        return U, Matrix(Sigma), V
+
 
 
 A = Matrix([
-    [12, -51, 4, 3, 2],
-    [6, 167, -68, 3, 2],
-    [-4, 24, -41, 3, 2],
-    [-1, 1, 0, 3, 2],
-    [-1, 1, 0, 3, 2],
-    [-1, 1, 0, 3, 2]
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
 ])
 
-Q, R = A.QR_decomposition()
-print("Matrix Q:")
-for row in Q.matrix:
+U, Sigma, Vt = A.SVD_decomposition()
+
+print("Матрица U:")
+for row in U.matrix:
     print(row)
 
-print("\nMatrix R:")
-for row in R.matrix:
+print("\nМатрица Sigma:")
+for row in Sigma.matrix:
     print(row)
+
+print("\nМатрица V^T:")
+for row in Vt.matrix:
+    print(row)
+
+X = U * Sigma * Vt
+print("Матрица X:")
+for row in X.matrix:
+    print(row)
+
