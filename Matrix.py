@@ -65,11 +65,10 @@ class Matrix:
         for j in range(self.columnLength):
             v = [self.matrix[i][j] for i in range(self.rowLength)]
 
-            # Проходим по всем вектором Q и вычитаем проекции
             for i in range(len(Q)):
                 q = Q[i]
                 projection = sum(q[k] * v[k] for k in range(self.rowLength))
-                R[i][j] = projection  # Сохраняем коэффициент проекции
+                R[i][j] = projection
                 v = [v[k] - projection * q[k] for k in range(self.rowLength)]
 
             norm = sum(x ** 2 for x in v) ** 0.5
@@ -77,67 +76,9 @@ class Matrix:
                 q = [x / norm for x in v]
                 Q.append(q)
 
-                # Устанавливаем R для текущего вектора q
-                R[len(Q) - 1][j] = norm  # Последняя строка соответствует новому q
+                R[len(Q) - 1][j] = norm
 
         return Matrix(Q).transpose(), Matrix(R)
-
-    def rref(self):
-        lead = 0
-        for r in range(self.rowLength):
-            if lead >= self.columnLength:
-                return self
-
-            i = r
-            while self.matrix[i][lead] == 0:
-                i += 1
-                if i == self.rowLength:
-                    i = r
-                    lead += 1
-                    if lead == self.columnLength:
-                        return self
-            self.matrix[i], self.matrix[r] = self.matrix[r], self.matrix[i]
-
-            # Нормализуем ведущий элемент
-            lv = self.matrix[r][lead]
-            self.matrix[r] = [mrx / float(lv) for mrx in self.matrix[r]]
-
-            for i in range(self.rowLength):
-                if i != r:
-                    lv = self.matrix[i][lead]
-                    self.matrix[i] = [iv - lv * rv for rv, iv in zip(self.matrix[r], self.matrix[i])]
-
-            lead += 1
-
-        return self
-
-    def extract_eigenVector(self):
-        solutions = [0] * self.columnLength
-
-        for row in self.matrix:
-            leading = None
-            for j in range(self.columnLength):
-                if row[j] != 0:
-                    leading = j
-                    break
-
-            if leading is not None:
-                solutions[leading] = row[-1]
-
-        return solutions
-
-    def get_eigenValues(self):
-        R = self.QR_decomposition()[1].matrix
-        return [R[i][i] for i in range(len(R))]
-
-    def get_eigenVectors(self):
-        eigenVectors = []
-        for eigenValue in self.get_eigenValues():
-            dA = Matrix([[self.matrix[i][j] - (eigenValue if i == j else 0) for j in range(self.columnLength)] for i in range(self.rowLength)])
-            dA = dA.rref()
-            eigenVector = dA.extract_eigenVector()
-            eigenVectors.append(eigenVector)
-        return eigenVectors
 
     def SVD_decomposition(self):
         AtA = self.transpose() * self
@@ -153,13 +94,58 @@ class Matrix:
 
         return U, Matrix(Sigma), Vt
 
+    def multiply_vector(self, vector):
+        return [sum(self.matrix[i][j] * vector[j] for j in range(self.columnLength)) for i in range(self.rowLength)]
 
+    def get_eigenValues(self, iterations=1000):
+        from random import random
+        eigenValues = []
+        for _ in range(min(self.rowLength, self.columnLength)):
+            b_k = [random() for _ in range(self.columnLength)]
+            # Perform power iteration
+            for _ in range(iterations):
+                # Calculate the matrix-by-vector product Ab
+                b_k1 = self.multiply_vector(b_k)
+                # Calculate the norm
+                b_k1_norm = sum(x ** 2 for x in b_k1) ** 0.5
+                # Re normalize the vector
+                b_k = [x / b_k1_norm for x in b_k1]
+            # Eigenvalue is the norm
+            eigenValue = b_k1_norm
+            eigenValues.append(eigenValue)
+            # Deflate the matrix
+            b_k_matrix = Matrix([[b_k[i]] for i in range(self.columnLength)])
+            outer_product = b_k_matrix * b_k_matrix.transpose()
+            self.matrix = [
+                [self.matrix[i][j] - eigenValue * outer_product.matrix[i][j] for j in range(self.columnLength)] for i in
+                range(self.rowLength)]
+        return eigenValues
+
+    def get_eigenVectors(self, iterations=1000):
+        from random import random
+        eigenVectors = []
+        for _ in range(min(self.rowLength, self.columnLength)):
+            # Start with a random vector
+            b_k = [random() for _ in range(self.columnLength)]
+            # Perform power iteration
+            for _ in range(iterations):
+                b_k1 = self.multiply_vector(b_k)
+                b_k1_norm = sum(x ** 2 for x in b_k1) ** 0.5
+                b_k = [x / b_k1_norm for x in b_k1]
+            eigenVectors.append(b_k)
+            # Deflate the matrix
+            eigenValue = b_k1_norm
+            b_k_matrix = Matrix([[b_k[i]] for i in range(self.columnLength)])
+            outer_product = b_k_matrix * b_k_matrix.transpose()
+            self.matrix = [
+                [self.matrix[i][j] - eigenValue * outer_product.matrix[i][j] for j in range(self.columnLength)] for i in
+                range(self.rowLength)]
+        return eigenVectors
 
 
 A = Matrix([
-    [1, 2, 3],
-    [4, 5, 6],
-    [7, 8, 9]
+    [0, 1, 0, 1],
+    [1, 0, 1, 0]
 ])
 
 U, Sigma, Vt = A.SVD_decomposition()
@@ -175,9 +161,3 @@ for row in Sigma.matrix:
 print("\nМатрица V^T:")
 for row in Vt.matrix:
     print(row)
-
-X = U * Sigma * Vt
-print("Матрица X:")
-for row in X.matrix:
-    print(row)
-
