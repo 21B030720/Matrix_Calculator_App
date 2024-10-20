@@ -5,25 +5,22 @@ class Matrix:
         self.columnLength = len(matrix[0])
 
     def __add__(self, other):
-        if self.rowLength != other.rowLength or self.columnLength != other.rowLength:
-            raise ValueError("Матрицы должны быть одинакового размера для сложения.")
+        if self.rowLength != other.rowLength or self.columnLength != other.columnLength:
+            raise ValueError("Matrices must be of the same size for addition.")
 
-        result = [[self.matrix[i][j] + other.matrix[i][j] for j in range(self.columnLength)] for i in
-                  range(self.rowLength)]
+        result = [[self.matrix[i][j] + other.matrix[i][j] for j in range(self.columnLength)] for i in range(self.rowLength)]
         return Matrix(result)
 
     def __sub__(self, other):
-        if self.rowLength != other.rowLength or self.columnLength != other.rowLength:
-            raise ValueError("Матрицы должны быть одинакового размера для вычитания.")
+        if self.rowLength != other.rowLength or self.columnLength != other.columnLength:
+            raise ValueError("Matrices must be of the same size for subtraction.")
 
-        result = [[self.matrix[i][j] - other.matrix[i][j] for j in range(self.columnLength)] for i in
-                  range(self.rowLength)]
+        result = [[self.matrix[i][j] - other.matrix[i][j] for j in range(self.columnLength)] for i in range(self.rowLength)]
         return Matrix(result)
 
     def __mul__(self, other):
         if self.columnLength != other.rowLength:
-            raise ValueError(
-                "Количество столбцов первой матрицы должно совпадать с количеством строк второй матрицы для умножения.")
+            raise ValueError("Number of columns in the first matrix must match the number of rows in the second matrix.")
 
         result = [[0 for _ in range(other.columnLength)] for _ in range(self.rowLength)]
 
@@ -83,8 +80,6 @@ class Matrix:
         return eigenvalues, eigenvectors
 
     def compute_U(self, V, Sigma):
-        # Compute U matrix from A, V, and Sigma
-        # U = A * V / Sigma
         U = [[0 for _ in range(len(V[0]))] for _ in range(self.rowLength)]
         for i in range(self.rowLength):
             for j in range(len(V[0])):
@@ -93,34 +88,29 @@ class Matrix:
                         U[i][j] += self.matrix[i][k] * V[k][j] / Sigma[k][k]
         return U
 
-    def LU_decomposition(self):
-        if self.rowLength != self.columnLength:
-            raise ValueError("LU-декомпозиция возможна только для квадратных матриц.")
-
-        L = [[0] * self.rowLength for _ in range(self.rowLength)]
-        U = [[0] * self.rowLength for _ in range(self.rowLength)]
-
-        for i in range(self.rowLength):
-            for j in range(i, self.rowLength):
-                sumUpper = sum(L[i][k] * U[k][j] for k in range(i))
-                U[i][j] = self.matrix[i][j] - sumUpper
-
-            for j in range(i, self.rowLength):
-                if i == j:
-                    L[i][i] = 1
-                else:
-                    sumLower = sum(L[j][k] * U[k][i] for k in range(i))
-                    L[j][i] = (self.matrix[j][i] - sumLower) / U[i][i]
-
-        return Matrix(L), Matrix(U)
-
     def SVD_decomposition(self):
+        # A^T * A
         AT = self.transpose()
         ATA = AT * self
 
+        # Get eigenvalues and right singular vectors (V)
         eigenvalues, V = self.eigen_decomposition(ATA.matrix)
 
-        Sigma = [[0 if i != j else eigenvalues[i] ** 0.5 for j in range(self.columnLength)] for i in range(self.rowLength)]
+        # Sigma matrix (diagonal matrix with singular values)
+        Sigma = [[0 for _ in range(self.columnLength)] for _ in range(self.rowLength)]
+        singular_values = [eigenvalue ** 0.5 for eigenvalue in eigenvalues]
+        for i in range(min(self.rowLength, self.columnLength)):
+            Sigma[i][i] = singular_values[i]
+
+        # Compute U matrix
         U = self.compute_U(V, Sigma)
 
         return Matrix(U), Matrix(Sigma), Matrix(V).transpose()
+
+# Example usage:
+A = Matrix([[1, 2], [3, 4], [5, 6]])
+U, Sigma, V_T = A.SVD_decomposition()
+
+print("U:", U.matrix)
+print("Sigma:", Sigma.matrix)
+print("V^T:", V_T.matrix)

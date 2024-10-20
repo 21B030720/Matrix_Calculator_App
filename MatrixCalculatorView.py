@@ -20,15 +20,13 @@ class MatrixCalculatorView:
         
         self.create_frames()
 
-    def create_frames(self):
-        """Create all frames required for the UI."""
+    def create_frames(self): # Basic Frames for Matrix
         self.create_size_input_frame()
         self.create_matrix_input_frames()
         self.create_operation_frame()
         self.create_result_frame()
 
-    def create_size_input_frame(self):
-        """Frame to input matrix sizes."""
+    def create_size_input_frame(self): # Inputs for Sizes of Matrixes
         frame = tk.Frame(self.master, bg=self.bg_color, pady=10)
         frame.pack()
 
@@ -49,19 +47,17 @@ class MatrixCalculatorView:
         )
         self.set_size_button.grid(row=0, column=8, padx=10, pady=5)
 
-    def clear_matrix_input_frames(self):
-        """Clear existing matrix input frames."""
+    def clear_matrix_input_frames(self): # Clear Inputs for Sizes of Matrixes
         for matrix in self.matrix_entries:
             self.matrix_entries[matrix] = []
         for widget in self.matrix_frame.pack_slaves():
             widget.destroy()
 
-    def create_matrix_input_frames(self, a_rows=0, a_cols=0, b_rows=0, b_cols=0):
-        """Create input fields for matrices A and B."""
+    def create_matrix_input_frames(self, a_rows=0, a_cols=0, b_rows=0, b_cols=0):  # Create Inputs for Matrixes
         if hasattr(self, 'matrix_frame'):
-            self.matrix_frame.destroy()  # Destroy previous frame to avoid multiple frames
+            self.matrix_frame.destroy()  # Destroy previous frame to avoid multiple frames, There was a Bug
         self.matrix_frame = tk.Frame(self.master, bg=self.bg_color)
-        self.matrix_frame.pack(pady=10)  # Add padding only once here
+        self.matrix_frame.pack(pady=10)  # Add padding only once, There was a Bug
 
         for matrix, rows, cols in [('A', a_rows, a_cols), ('B', b_rows, b_cols)]:
             frame = tk.Frame(self.matrix_frame, bg=self.bg_color)
@@ -78,8 +74,7 @@ class MatrixCalculatorView:
                     row_entries.append(entry)
                 self.matrix_entries[matrix].append(row_entries)
 
-    def create_operation_frame(self):
-        """Frame containing operation buttons."""
+    def create_operation_frame(self):  # Buttons For Calculation
         self.operation_frame = tk.Frame(self.master, bg=self.bg_color, pady=10)
         self.operation_frame.pack()
 
@@ -88,6 +83,7 @@ class MatrixCalculatorView:
             {"text": "A - B", "command": self.controller.subtract_matrices},
             {"text": "A × B", "command": self.controller.multiply_matrices},
             {"text": "LU Decomposition", "command": self.controller.lu_decomposition},
+            {"text": "SVD Decomposition", "command": self.controller.svd_decomposition},
             {"text": "Clear", "command": self.controller.clear_all}
         ]
 
@@ -100,8 +96,7 @@ class MatrixCalculatorView:
             )
             button.grid(row=0, column=idx, padx=10, pady=5)
 
-    def create_result_frame(self):
-        """Frame to display result."""
+    def create_result_frame(self): # Place of Result
         self.result_frame = tk.Frame(self.master, bg=self.bg_color, pady=10)
         self.result_frame.pack()
 
@@ -111,13 +106,12 @@ class MatrixCalculatorView:
         self.result_text.pack(padx=10, pady=10)
         self.result_text.config(state=tk.DISABLED)
 
-    def display_result(self, result):
-        """Display the result matrix."""
+    def display_result(self, result): # Show Result after Calculation
         self.result_text.config(state=tk.NORMAL)
         self.result_text.delete(1.0, tk.END)
         self.result_text.insert(tk.END, str(result))
         self.result_text.config(state=tk.DISABLED)
 
-    def show_error(self, title, message):
+    def show_error(self, title, message): # Error
         """Show error message box.""" 
         messagebox.showerror(title, message)
