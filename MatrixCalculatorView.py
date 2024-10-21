@@ -85,7 +85,9 @@ class MatrixCalculatorView:
             {"text": "LU Decomposition", "command": self.controller.lu_decomposition},
             # {"text": "SVD Decomposition", "command": self.controller.svd_decomposition},
             {"text": "QR Decomposition", "command": self.controller.qr_decomposition},
-            {"text": "Clear", "command": self.controller.clear_all}
+            {"text": "Gramm-Smidth", "command": self.controller.gram_schmidt_orthogonalization},
+            {"text": "Determinant", "command": self.controller.determinant},
+            {"text": "Clear", "command": self.controller.clear_all},
         ]
 
         for idx, btn in enumerate(buttons):

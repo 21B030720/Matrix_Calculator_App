@@ -82,6 +82,24 @@ class Matrix:
                     R[i][j] = sum(Q[i][k] * self.matrix[k][j] for k in range(self.rowLength))
 
         return Matrix(Q).transpose(), Matrix(R)
+    
+    def Gram_Schmidt_orthogonalization(self):
+        Q = [] # orthogonal vectors
+        
+        for j in range(self.columnLength):
+            v = [self.matrix[i][j] for i in range(self.rowLength)] # Copy the j-th column vector from the matrix
+            
+            for q in Q: # Subtract projections onto previously computed orthogonal vectors
+                projection = sum(q[k] * v[k] for k in range(self.rowLength)) 
+                v = [v[k] - projection * q[k] for k in range(self.rowLength)]
+            
+            norm = sum(x ** 2 for x in v) ** 0.5 
+            if norm > 0: # normalize vector
+                v = [x / norm for x in v]
+
+            Q.append(v) # Append the orthogonal (or orthonormal) vector to the list
+
+        return Matrix(Q).transpose()
 
     def SVD_decomposition(self):
         AtA = self.transpose() * self
@@ -97,6 +115,30 @@ class Matrix:
         U = self * V * Matrix(Sigma)
 
         return U, Matrix(Sigma), V
+
+    def minor(self, i, j):
+        minor_matrix = [ # Create the minor matrix by removing row i and column j
+            [self.matrix[x][y] for y in range(self.columnLength) if y != j]
+            for x in range(self.rowLength) if x != i
+        ]
+        return Matrix(minor_matrix)
+
+    def determinant(self):
+        # Base cases
+        if self.rowLength == 1 and self.columnLength == 1:
+            return self.matrix[0][0]
+
+        if self.rowLength == 2 and self.columnLength == 2:
+            return self.matrix[0][0] * self.matrix[1][1] - self.matrix[0][1] * self.matrix[1][0]
+
+        # Laplace expansion along the first row (i=0)
+        det = 0
+        for j in range(self.columnLength):
+            cofactor = (-1) ** (0 + j) * self.matrix[0][j]
+            minor_det = self.minor(0, j).determinant()
+            det += cofactor * minor_det
+        
+        return det
 
 
 # A = Matrix([
