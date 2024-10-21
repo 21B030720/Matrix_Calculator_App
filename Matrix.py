@@ -40,62 +40,6 @@ class Matrix:
     def transpose(self):
         return Matrix([[self.matrix[j][i] for j in range(self.rowLength)] for i in range(self.columnLength)])
 
-    def eigen_decomposition(self, matrix, max_iterations=1000, tolerance=1e-10):
-        from random import random
-
-        n = len(matrix)
-        eigenvalues = []
-        eigenvectors = []
-
-        def random_vector(n):
-            return [random() for _ in range(n)]
-
-        def normalize(vector):
-            norm = sum(x ** 2 for x in vector) ** 0.5
-            return [x / norm for x in vector]
-
-        def mat_vec_multiply(A, v):
-            result = [0] * len(v)
-            for i in range(len(A)):
-                for j in range(len(A[0])):
-                    result[i] += A[i][j] * v[j]
-            return result
-
-        for _ in range(n):
-            v = random_vector(n)
-            v = normalize(v)
-            eigenvalue_old = 0
-            eigenvalue_new = None
-
-            for _ in range(max_iterations):
-                w = mat_vec_multiply(matrix, v)
-
-                v = normalize(w)
-
-                eigenvalue_new = sum(v[i] * w[i] for i in range(n)) / sum(v[i] * v[i] for i in range(n))
-
-                if abs(eigenvalue_new - eigenvalue_old) < tolerance:
-                    break
-                eigenvalue_old = eigenvalue_new
-
-            eigenvalues.append(eigenvalue_new)
-            eigenvectors.append(v)
-
-            matrix = [[matrix[i][j] - eigenvalue_new * v[i] * v[j] for j in range(n)] for i in range(n)]
-
-        return eigenvalues, eigenvectors
-
-    def compute_U(self, V, Sigma):
-        # Compute U matrix from A, V, and Sigma
-        # U = A * V / Sigma
-        U = [[0 for _ in range(len(V[0]))] for _ in range(self.rowLength)]
-        for i in range(self.rowLength):
-            for j in range(len(V[0])):
-                for k in range(self.columnLength):
-                    if Sigma[k][k] != 0:
-                        U[i][j] += self.matrix[i][k] * V[k][j] / Sigma[k][k]
-        return U
-
     def LU_decomposition(self):
         if self.rowLength != self.columnLength:
             raise ValueError("LU-декомпозиция возможна только для квадратных матриц.")
@@ -117,13 +61,59 @@ class Matrix:
 
         return Matrix(L), Matrix(U)
 
+    def QR_decomposition(self):
+        Q = []
+        R = [[0] * self.columnLength for _ in range(self.columnLength)]  # Изменено на columnLength
+
+        for j in range(self.columnLength):
+            v = [self.matrix[i][j] for i in range(self.rowLength)]
+
+            for i in range(len(Q)):
+                q = Q[i]
+                projection = sum(q[k] * v[k] for k in range(self.rowLength))
+                v = [v[k] - projection * q[k] for k in range(self.rowLength)]
+
+            norm = sum(x ** 2 for x in v) ** 0.5
+            if norm > 0:
+                q = [x / norm for x in v]
+                Q.append(q)
+
+                for i in range(len(Q)):
+                    R[i][j] = sum(Q[i][k] * self.matrix[k][j] for k in range(self.rowLength))
+
+        return Matrix(Q).transpose(), Matrix(R)
+
     def SVD_decomposition(self):
-        AT = self.transpose()
-        ATA = AT * self
+        AtA = self.transpose() * self
+        eigenValues, eigenVectors = self.eigen_decomposition(AtA)
 
-        eigenvalues, V = self.eigen_decomposition(ATA.matrix)
+        V = Matrix(eigenVectors).transpose()
 
-        Sigma = [[0 if i != j else eigenvalues[i] ** 0.5 for j in range(self.columnLength)] for i in range(self.rowLength)]
-        U = self.compute_U(V, Sigma)
+        Sigma = [[0] * self.columnLength for _ in range(self.rowLength)]
+        for i in range(len(eigenValues)):
+            Sigma[i][i] = eigenValues[i] ** 0.5
 
-        return Matrix(U), Matrix(Sigma), Matrix(V).transpose()
+
+        U = self * V * Matrix(Sigma)
+
+        return U, Matrix(Sigma), V
+
+
+# A = Matrix([
+#     [12, -51, 4, 3, 2],
+#     [6, 167, -68, 3, 2],
+#     [-4, 24, -41, 3, 2],
+#     [-1, 1, 0, 3, 2],
+#     [-1, 1, 0, 3, 2],
+#     [-1, 1, 0, 3, 2]
+# ])
+
+# Q, R = A.QR_decomposition()
+# print("Matrix Q:")
+# for row in Q.matrix:
+#     print(row)
+
+# print("\nMatrix R:")
+# for row in R.matrix:
+#     print(row)
+

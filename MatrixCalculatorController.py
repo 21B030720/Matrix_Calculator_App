@@ -138,6 +138,34 @@ class MatrixCalculatorController:
         except ValueError as ve:
             view.show_error("Error", str(ve))
 
+    def qr_decomposition(self):  # SVD Decomposition Matrix
+        view = self.get_view()  # Get the actual view object
+        choice = simpledialog.askstring("QR Decomposition", "Enter 'A' for Matrix A or 'B' for Matrix B:")
+        if choice is None:
+            return
+
+        choice = choice.strip().upper()
+        if choice not in ['A', 'B']:
+            view.show_error("Invalid Choice", "Please enter 'A' or 'B'.")
+            return
+
+        rows = len(view.matrix_entries[choice])
+        cols = len(view.matrix_entries[choice][0]) if rows > 0 else 0
+        if rows == 0 or cols == 0:
+            view.show_error("Input Error", f"Matrix {choice} is empty. Please input values.")
+            return
+
+        matrix = self.get_matrix(view.matrix_entries[choice])
+        if matrix is None:
+            return
+
+        try:
+            q, r = matrix.QR_decomposition()
+            result = f"Q:\n{q}\n\R:\n{r}"
+            view.display_result(result)
+        except ValueError as ve:
+            view.show_error("Error", str(ve))
+
     def clear_all(self):  # Clear All
         view = self.get_view()  # Get the actual view object
         view.result_text.config(state=tk.NORMAL)
