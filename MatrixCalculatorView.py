@@ -83,7 +83,7 @@ class MatrixCalculatorView:
             {"text": "A - B", "command": self.controller.subtract_matrices},
             {"text": "A × B", "command": self.controller.multiply_matrices},
             {"text": "LU Decomposition", "command": self.controller.lu_decomposition},
-            # {"text": "SVD Decomposition", "command": self.controller.svd_decomposition},
+            {"text": "SVD Decomposition", "command": self.controller.svd_decomposition},
             {"text": "QR Decomposition", "command": self.controller.qr_decomposition},
             {"text": "Gramm-Smidth", "command": self.controller.gram_schmidt_orthogonalization},
             {"text": "Determinant", "command": self.controller.determinant},
