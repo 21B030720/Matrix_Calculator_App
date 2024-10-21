@@ -40,6 +40,7 @@ class Matrix:
     def transpose(self):
         return Matrix([[self.matrix[j][i] for j in range(self.rowLength)] for i in range(self.columnLength)])
 
+    # LU
     def LU_decomposition(self):
         if self.rowLength != self.columnLength:
             raise ValueError("LU-декомпозиция возможна только для квадратных матриц.")
@@ -60,7 +61,8 @@ class Matrix:
                     L[j][i] = (self.matrix[j][i] - sumLower) / U[i][i]
 
         return Matrix(L), Matrix(U)
-
+    
+    # QR
     def QR_decomposition(self):
         Q = []
         R = [[0] * self.columnLength for _ in range(self.columnLength)]  # Изменено на columnLength
@@ -83,6 +85,7 @@ class Matrix:
 
         return Matrix(Q).transpose(), Matrix(R)
     
+    # Gramm_Smidth
     def Gram_Schmidt_orthogonalization(self):
         Q = [] # orthogonal vectors
         
@@ -101,6 +104,7 @@ class Matrix:
 
         return Matrix(Q).transpose()
 
+    # SVD - not working well
     def SVD_decomposition(self):
         AtA = self.transpose() * self
         eigenValues, eigenVectors = self.eigen_decomposition(AtA)
@@ -116,6 +120,9 @@ class Matrix:
 
         return U, Matrix(Sigma), V
 
+    ###
+    ### For Laplace expansion
+    ###
     def minor(self, i, j):
         minor_matrix = [ # Create the minor matrix by removing row i and column j
             [self.matrix[x][y] for y in range(self.columnLength) if y != j]

@@ -221,6 +221,7 @@ class MatrixCalculatorController:
             view.display_result(result)
         except ValueError as ve:
             view.show_error("Error", str(ve))
+    
 
     def clear_all(self):  # Clear All
         view = self.get_view()  # Get the actual view object
