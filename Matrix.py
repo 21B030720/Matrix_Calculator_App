@@ -3,6 +3,7 @@ class Matrix:
         self.matrix = matrix
         self.rowLength = len(matrix)
         self.columnLength = len(matrix[0])
+        self.n = len(matrix) # for inverse
 
     def __str__(self):
         return "\n".join(["\t".join(map(str, row)) for row in self.matrix])
@@ -196,6 +197,36 @@ class Matrix:
             det += cofactor * minor_det
         
         return det
+
+    def inverse(self):
+        """Calculates the inverse of the matrix using Gauss-Jordan elimination."""
+        # Step 1: Create the augmented matrix (original matrix + identity matrix)
+        A = [row[:] + [1 if i == j else 0 for j in range(self.n)] for i, row in enumerate(self.matrix)]
+
+        # Step 2: Perform Gauss-Jordan elimination
+        for i in range(self.n):
+            # Ensure the diagonal element is non-zero (if zero, swap with a row below)
+            if A[i][i] == 0:
+                for j in range(i + 1, self.n):
+                    if A[j][i] != 0:
+                        A[i], A[j] = A[j], A[i]  # Swap rows
+                        break
+                else:
+                    raise ValueError("Matrix is singular and cannot be inverted.")
+
+            # Normalize the diagonal element to 1
+            diag = A[i][i]
+            A[i] = [x / diag for x in A[i]]
+
+            # Make all elements in the current column zero except the diagonal element
+            for j in range(self.n):
+                if i != j:
+                    factor = A[j][i]
+                    A[j] = [x - factor * y for x, y in zip(A[j], A[i])]
+
+        # Step 3: Extract the right half (the inverse matrix)
+        inverse_matrix = [row[self.n:] for row in A]
+        return Matrix(inverse_matrix)
 
 
 # A = Matrix([

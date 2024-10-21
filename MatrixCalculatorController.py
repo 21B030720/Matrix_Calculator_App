@@ -222,6 +222,34 @@ class MatrixCalculatorController:
         except ValueError as ve:
             view.show_error("Error", str(ve))
     
+    def inverse(self):
+        view = self.get_view()  # Get the actual view object
+        choice = simpledialog.askstring("Inverse", "Enter 'A' for Matrix A or 'B' for Matrix B:")
+        if choice is None:
+            return
+
+        choice = choice.strip().upper()
+        if choice not in ['A', 'B']:
+            view.show_error("Invalid Choice", "Please enter 'A' or 'B'.")
+            return
+
+        rows = len(view.matrix_entries[choice])
+        cols = len(view.matrix_entries[choice][0]) if rows > 0 else 0
+        if rows == 0 or cols == 0:
+            view.show_error("Input Error", f"Matrix {choice} is empty. Please input values.")
+            return
+
+        matrix = self.get_matrix(view.matrix_entries[choice])
+        if matrix is None:
+            return
+
+        try:
+            det = matrix.inverse()
+            result = f"Inverted:\n{det}"
+            view.display_result(result)
+        except ValueError as ve:
+            view.show_error("Error", str(ve))
+    
 
     def clear_all(self):  # Clear All
         view = self.get_view()  # Get the actual view object

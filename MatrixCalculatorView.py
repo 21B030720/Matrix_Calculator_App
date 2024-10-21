@@ -8,7 +8,7 @@ class MatrixCalculatorView:
         self.master = master
         self.controller = MatrixCalculatorController(self)
         master.title("Matrix Calculator")
-        master.geometry("900x700")
+        master.geometry("1200x700")
         master.resizable(False, False)
 
         self.bg_color = "#f0f0f0"
@@ -87,6 +87,7 @@ class MatrixCalculatorView:
             {"text": "QR Decomposition", "command": self.controller.qr_decomposition},
             {"text": "Gramm-Smidth", "command": self.controller.gram_schmidt_orthogonalization},
             {"text": "Determinant", "command": self.controller.determinant},
+            {"text": "Inverse", "command": self.controller.inverse},
             {"text": "Clear", "command": self.controller.clear_all},
         ]
 
