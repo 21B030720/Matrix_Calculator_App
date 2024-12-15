@@ -19,6 +19,19 @@ class MatrixCalculatorController:
             raise ReferenceError("View has been garbage collected.")
         return view
 
+    def fetch_logs(self):  # Fetch logs from MongoDB
+        view = self.get_view()
+        logs = []
+        try:
+            cursor = self.collection.find().sort('timestamp', -1)  # Sort by timestamp in descending order
+            for log_entry in cursor:
+                operation = log_entry.get('operation', 'Unknown Operation')
+                logs.append(f"{operation}: {log_entry.get('result', 'No result')}")
+            return logs
+        except Exception as e:
+            view.show_error("Error", f"Failed to fetch logs: {str(e)}")
+            return []
+
     def log_calculation(self, operation, matrix_a, matrix_b, result):
         log_entry = {
             'operation': operation,
@@ -27,6 +40,11 @@ class MatrixCalculatorController:
             'result': result.to_dict()  # Convert result to dict
         }
         self.collection.insert_one(log_entry)
+        self.update_logs_in_view()
+    def update_logs_in_view(self):  # Update the logs in the view
+        view = self.get_view()
+        logs = self.fetch_logs()
+        view.update_log_display(logs)
 
     def set_sizes(self):  # Set Sizes for Matrices
         view = self.get_view()  # Get the actual view object
@@ -96,6 +114,7 @@ class MatrixCalculatorController:
 
             view.display_result(result)
             self.log_calculation(operation, matrix_a, matrix_b, result)  # Log the result to MongoDB
+            self.update_logs_in_view()
 
         except ValueError as ve:
             view.show_error("Error", str(ve))

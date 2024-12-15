@@ -20,6 +20,28 @@ class MatrixCalculatorView:
         
         self.create_frames()
 
+        self.create_log_frame()  
+
+    def create_frames(self):  # Basic Frames for Matrix
+        self.create_size_input_frame()
+        self.create_matrix_input_frames()
+        self.create_operation_frame()
+        self.create_result_frame()
+
+    def create_log_frame(self):  # Create Frame for Logs
+        self.log_frame = tk.Frame(self.master, bg=self.bg_color, pady=10)
+        self.log_frame.pack(side=tk.RIGHT, padx=20, pady=20)
+
+        self.log_label = tk.Label(self.log_frame, text="Calculation Logs", bg=self.bg_color, font=("Arial", 14, "bold"))
+        self.log_label.pack()
+
+        self.log_listbox = tk.Listbox(self.log_frame, height=15, width=40, borderwidth=2, relief="ridge")
+        self.log_listbox.pack(padx=10, pady=10)
+
+    def update_log_display(self, logs):  # Update Logs in Listbox
+        for log in logs:
+            self.log_listbox.insert(tk.END, log)
+
     def create_frames(self): # Basic Frames for Matrix
         self.create_size_input_frame()
         self.create_matrix_input_frames()
