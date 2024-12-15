@@ -38,6 +38,13 @@ class Matrix:
 
         return Matrix(result)
 
+    def to_dict(self):
+        return {'matrix': self.matrix}
+    
+    @classmethod
+    def from_dict(cls, data_dict):
+        return cls(data_dict['matrix'])
+    
     def transpose(self):
         return Matrix([[self.matrix[j][i] for j in range(self.rowLength)] for i in range(self.columnLength)])
 

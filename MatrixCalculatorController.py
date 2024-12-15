@@ -2,16 +2,31 @@ import tkinter as tk
 from tkinter import messagebox, ttk, simpledialog
 from Matrix import Matrix
 import weakref
+from pymongo import MongoClient
+from datetime import datetime
+
 
 class MatrixCalculatorController:
-    def __init__(self, view):
+    def __init__(self, view, db_uri="mongodb://localhost:27017", db_name="matrix_calculator"):
         self.view = weakref.ref(view)  # Store a weak reference to the view
+        self.client = MongoClient(db_uri)  # MongoDB client
+        self.db = self.client[db_name]  # Database
+        self.collection = self.db['calculations']  # Collection to store matrix calculations
 
     def get_view(self):
         view = self.view()
         if view is None:
             raise ReferenceError("View has been garbage collected.")
         return view
+
+    def log_calculation(self, operation, matrix_a, matrix_b, result):
+        log_entry = {
+            'operation': operation,
+            'matrix_a': matrix_a.to_dict(),  # Convert to dict
+            'matrix_b': matrix_b.to_dict(),  # Convert to dict
+            'result': result.to_dict()  # Convert result to dict
+        }
+        self.collection.insert_one(log_entry)
 
     def set_sizes(self):  # Set Sizes for Matrices
         view = self.get_view()  # Get the actual view object
@@ -78,41 +93,34 @@ class MatrixCalculatorController:
                 result = matrix_a - matrix_b
             elif operation == 'multiply':
                 result = matrix_a * matrix_b
+
             view.display_result(result)
+            self.log_calculation(operation, matrix_a, matrix_b, result)  # Log the result to MongoDB
+
         except ValueError as ve:
             view.show_error("Error", str(ve))
 
     def svd_decomposition(self):  # SVD Decomposition Matrix
-        view = self.get_view()  # Get the actual view object
-        choice = simpledialog.askstring("SVD Decomposition", "Enter 'A' for Matrix A or 'B' for Matrix B:")
-        if choice is None:
-            return
-
-        choice = choice.strip().upper()
-        if choice not in ['A', 'B']:
-            view.show_error("Invalid Choice", "Please enter 'A' or 'B'.")
-            return
-
-        rows = len(view.matrix_entries[choice])
-        cols = len(view.matrix_entries[choice][0]) if rows > 0 else 0
-        if rows == 0 or cols == 0:
-            view.show_error("Input Error", f"Matrix {choice} is empty. Please input values.")
-            return
-
-        matrix = self.get_matrix(view.matrix_entries[choice])
-        if matrix is None:
-            return
-
-        try:
-            u, sigma, v = matrix.SVD_decomposition()
-            result = f"U:\n{u}\nSigma:\n{sigma}\nV:\n{v}"
-            view.display_result(result)
-        except ValueError as ve:
-            view.show_error("Error", str(ve))
+        self.decompose("SVD")
 
     def lu_decomposition(self):  # LU Decomposition Matrix
+        self.decompose("LU")
+
+    def qr_decomposition(self):  # QR Decomposition Matrix
+        self.decompose("QR")
+
+    def gram_schmidt_orthogonalization(self):  # Gram-Schmidt Orthogonalization
+        self.decompose("Gram-Schmidt")
+
+    def determinant(self):  # Determinant Calculation
+        self.decompose("Determinant")
+
+    def inverse(self):  # Inverse Calculation
+        self.decompose("Inverse")
+
+    def decompose(self, operation):  # Generalized Decomposition
         view = self.get_view()  # Get the actual view object
-        choice = simpledialog.askstring("LU Decomposition", "Enter 'A' for Matrix A or 'B' for Matrix B:")
+        choice = simpledialog.askstring(f"{operation} Decomposition", "Enter 'A' for Matrix A or 'B' for Matrix B:")
         if choice is None:
             return
 
@@ -132,124 +140,31 @@ class MatrixCalculatorController:
             return
 
         try:
-            l, u = matrix.LU_decomposition()
-            result = f"L:\n{l}\nU:\n{u}"
+            result = None
+            if operation == "SVD":
+                u, sigma, v = matrix.SVD_decomposition()
+                result = f"U:\n{u}\nSigma:\n{sigma}\nV:\n{v}"
+            elif operation == "LU":
+                l, u = matrix.LU_decomposition()
+                result = f"L:\n{l}\nU:\n{u}"
+            elif operation == "QR":
+                q, r = matrix.QR_decomposition()
+                result = f"Q:\n{q}\nR:\n{r}"
+            elif operation == "Gram-Schmidt":
+                q = matrix.Gram_Schmidt_orthogonalization()
+                result = f"Q:\n{q}"
+            elif operation == "Determinant":
+                det = matrix.determinant()
+                result = f"Determinant:\n{det}"
+            elif operation == "Inverse":
+                inv = matrix.inverse()
+                result = f"Inverse:\n{inv}"
+
             view.display_result(result)
+            self.log_calculation(operation, matrix, None, result)  # Log the result to MongoDB
+
         except ValueError as ve:
             view.show_error("Error", str(ve))
-
-    def qr_decomposition(self):  # SVD Decomposition Matrix
-        view = self.get_view()  # Get the actual view object
-        choice = simpledialog.askstring("QR Decomposition", "Enter 'A' for Matrix A or 'B' for Matrix B:")
-        if choice is None:
-            return
-
-        choice = choice.strip().upper()
-        if choice not in ['A', 'B']:
-            view.show_error("Invalid Choice", "Please enter 'A' or 'B'.")
-            return
-
-        rows = len(view.matrix_entries[choice])
-        cols = len(view.matrix_entries[choice][0]) if rows > 0 else 0
-        if rows == 0 or cols == 0:
-            view.show_error("Input Error", f"Matrix {choice} is empty. Please input values.")
-            return
-
-        matrix = self.get_matrix(view.matrix_entries[choice])
-        if matrix is None:
-            return
-
-        try:
-            q, r = matrix.QR_decomposition()
-            result = f"Q:\n{q}\n\R:\n{r}"
-            view.display_result(result)
-        except ValueError as ve:
-            view.show_error("Error", str(ve))
-    
-    def gram_schmidt_orthogonalization(self):
-        view = self.get_view()  # Get the actual view object
-        choice = simpledialog.askstring("GS Decomposition", "Enter 'A' for Matrix A or 'B' for Matrix B:")
-        if choice is None:
-            return
-
-        choice = choice.strip().upper()
-        if choice not in ['A', 'B']:
-            view.show_error("Invalid Choice", "Please enter 'A' or 'B'.")
-            return
-
-        rows = len(view.matrix_entries[choice])
-        cols = len(view.matrix_entries[choice][0]) if rows > 0 else 0
-        if rows == 0 or cols == 0:
-            view.show_error("Input Error", f"Matrix {choice} is empty. Please input values.")
-            return
-
-        matrix = self.get_matrix(view.matrix_entries[choice])
-        if matrix is None:
-            return
-
-        try:
-            q = matrix.Gram_Schmidt_orthogonalization()
-            result = f"Q:\n{q}"
-            view.display_result(result)
-        except ValueError as ve:
-            view.show_error("Error", str(ve))
-    
-    def determinant(self):
-        view = self.get_view()  # Get the actual view object
-        choice = simpledialog.askstring("Laplace expansion", "Enter 'A' for Matrix A or 'B' for Matrix B:")
-        if choice is None:
-            return
-
-        choice = choice.strip().upper()
-        if choice not in ['A', 'B']:
-            view.show_error("Invalid Choice", "Please enter 'A' or 'B'.")
-            return
-
-        rows = len(view.matrix_entries[choice])
-        cols = len(view.matrix_entries[choice][0]) if rows > 0 else 0
-        if rows == 0 or cols == 0:
-            view.show_error("Input Error", f"Matrix {choice} is empty. Please input values.")
-            return
-
-        matrix = self.get_matrix(view.matrix_entries[choice])
-        if matrix is None:
-            return
-
-        try:
-            det = matrix.determinant()
-            result = f"Determinant:\n{det}"
-            view.display_result(result)
-        except ValueError as ve:
-            view.show_error("Error", str(ve))
-    
-    def inverse(self):
-        view = self.get_view()  # Get the actual view object
-        choice = simpledialog.askstring("Inverse", "Enter 'A' for Matrix A or 'B' for Matrix B:")
-        if choice is None:
-            return
-
-        choice = choice.strip().upper()
-        if choice not in ['A', 'B']:
-            view.show_error("Invalid Choice", "Please enter 'A' or 'B'.")
-            return
-
-        rows = len(view.matrix_entries[choice])
-        cols = len(view.matrix_entries[choice][0]) if rows > 0 else 0
-        if rows == 0 or cols == 0:
-            view.show_error("Input Error", f"Matrix {choice} is empty. Please input values.")
-            return
-
-        matrix = self.get_matrix(view.matrix_entries[choice])
-        if matrix is None:
-            return
-
-        try:
-            det = matrix.inverse()
-            result = f"Inverted:\n{det}"
-            view.display_result(result)
-        except ValueError as ve:
-            view.show_error("Error", str(ve))
-    
 
     def clear_all(self):  # Clear All
         view = self.get_view()  # Get the actual view object
