@@ -48,6 +48,39 @@ class Matrix:
     def transpose(self):
         return Matrix([[self.matrix[j][i] for j in range(self.rowLength)] for i in range(self.columnLength)])
     
+    def frobenius_norm(self):
+        return sum(sum(x**2 for x in row) for row in self.matrix) ** 0.5
+
+    def multiply(self, other):
+        result = [[sum(a * b for a, b in zip(row, col)) for col in zip(*other.matrix)] for row in self.matrix]
+        return Matrix(result)
+
+    def add(self, other):
+        result = [[self.matrix[i][j] + other.matrix[i][j] for j in range(self.columnLength)] for i in range(self.rowLength)]
+        return Matrix(result)
+    
+    def scale(self, scalar):
+        result = [[self.matrix[i][j] * scalar for j in range(self.columnLength)] for i in range(self.rowLength)]
+        return Matrix(result)
+    
+    def polar_decomposition(matrix, tol=1e-9, max_iterations=100):
+        """Polar decomposition using iterative approximation."""
+        U = matrix  # Initial guess for U
+        I = Matrix([[1 if i == j else 0 for j in range(matrix.columnLength)] for i in range(matrix.rowLength)])  # Identity matrix
+
+        for _ in range(max_iterations):
+            U_inv = U.inverse().transpose()  # Compute (U^(-1))^T
+            U_next = U.add(U_inv).scale(0.5)  # U_(n+1) = (U_n + (U_n^-1)^T) / 2
+
+            if (U_next.add(U.scale(-1)).frobenius_norm() < tol):  # Check convergence
+                break
+
+            U = U_next
+
+        P = U.transpose().multiply(matrix)  # Compute P = U^T * A
+        return U, P
+
+    # Moore Penrose Decomposition
     def moore_penrose_pseudoinverse(self):
         """Calculates the Moore-Penrose pseudoinverse without SVD."""
         if self.rowLength >= self.columnLength:  # Tall or square matrix

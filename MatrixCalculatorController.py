@@ -136,6 +136,9 @@ class MatrixCalculatorController:
     
     def moore_penrose_pseudoinverse(self):
         self.decompose('Pseudoinverse')
+    
+    def polar_decomposition(self):
+        self.decompose('Polar')
 
     def inverse(self):  # Inverse Calculation
         self.decompose("Inverse")
@@ -184,6 +187,9 @@ class MatrixCalculatorController:
             elif operation == "Pseudoinverse":
                 pinv = matrix.moore_penrose_pseudoinverse()
                 result = f"Pseudoinverse:\n{pinv}"
+            elif operation == 'Polar':
+                u, p = matrix.polar_decomposition()
+                result = f"U:\n{u}\nP:\n{p}"
 
             view.display_result(result)
             self.log_calculation(operation, matrix, None, result)  # Log the result to MongoDB
