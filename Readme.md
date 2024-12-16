@@ -14,38 +14,30 @@ Subtraction (__sub__): Subtracts one matrix from another of the same dimensions.
 
 Multiplication (__mul__): Multiplies two matrices if the number of columns in the first matches the rows in the second. a * b
 
-2. Matrix Utilities:
 
-Transpose (transpose): Returns the transpose of the matrix.
+2. Decomposition Methods:
 
-Scaling (scale): Multiplies all elements of the matrix by a scalar.
+LU Decomposition: Returns the lower and upper triangular matrices for a square matrix.
 
-Frobenius Norm (frobenius_norm): Computes the Frobenius norm of the matrix.
+QR Decomposition: Computes the QR decomposition of a matrix using the Gram-Schmidt process.
 
-Convert to Dictionary (to_dict) and Load from Dictionary (from_dict): Facilitates serialization and deserialization of matrix objects.
+Gram-Schmidt Orthogonalization: Orthogonalizes the columns of the matrix.
 
-3. Decomposition Methods:
+Singular Value Decomposition: Computes the singular value decomposition.
 
-LU Decomposition (LU_decomposition): Returns the lower and upper triangular matrices for a square matrix.
+Polar Decomposition: Performs polar decomposition into orthogonal and positive semidefinite matrices.
 
-QR Decomposition (QR_decomposition): Computes the QR decomposition of a matrix using the Gram-Schmidt process.
 
-Gram-Schmidt Orthogonalization (Gram_Schmidt_orthogonalization): Orthogonalizes the columns of the matrix.
+3. Additional Calculations:
 
-Singular Value Decomposition (SVD_decomposition): Computes the singular value decomposition.
+Determinant: Computes the determinant of a square matrix using Laplace expansion.
 
-4. Advanced Calculations:
+Inverse: Calculates the inverse of the matrix using Gauss-Jordan elimination.
 
-Determinant (determinant): Computes the determinant of a square matrix using Laplace expansion.
+Moore-Penrose Pseudoinverse: Computes the pseudoinverse of a matrix.
 
-Inverse (inverse): Calculates the inverse of the matrix using Gauss-Jordan elimination.
 
-Moore-Penrose Pseudoinverse (moore_penrose_pseudoinverse): Computes the pseudoinverse of a matrix.
+4. GUI
 
-Polar Decomposition (polar_decomposition): Performs polar decomposition into orthogonal and positive semidefinite matrices.
+Used Tkinter. We think everything will be clear
 
-5. Eigenvalues and Eigenvectors:
-
-Eigenvalues (get_eigenValues): Computes eigenvalues of the matrix using power iteration.
-
-Eigenvectors (get_eigenVectors): Computes eigenvectors corresponding to the eigenvalues.
