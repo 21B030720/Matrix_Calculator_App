@@ -1,0 +1,12 @@
+Metadata-Version: 2.1
+Name: matrixlib_arslan_and_timur
+Version: 1.0.0
+Summary: A library for matrix operations, prepared for final
+Author: Arslan Toimbekov and Timur Baitukenov
+Author-email: jacklol5760@gmail.com
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Provides-Extra: gui
+Requires-Dist: tkinter; extra == "gui"
