@@ -143,6 +143,9 @@ class MatrixCalculatorController:
     def inverse(self):  # Inverse Calculation
         self.decompose("Inverse")
 
+    def adjoint(self):
+        self.decompose('Adjoint')
+
     def decompose(self, operation):  # Generalized Decomposition
         view = self.get_view()  # Get the actual view object
         choice = simpledialog.askstring(f"{operation} Decomposition", "Enter 'A' for Matrix A or 'B' for Matrix B:")
@@ -190,6 +193,9 @@ class MatrixCalculatorController:
             elif operation == 'Polar':
                 u, p = matrix.polar_decomposition()
                 result = f"U:\n{u}\nP:\n{p}"
+            elif operation == 'Adjoint':
+                u = matrix.adjoint()
+                result = f"U:\n{u}"
 
             view.display_result(result)
             self.log_calculation(operation, matrix, None, result)  # Log the result to MongoDB

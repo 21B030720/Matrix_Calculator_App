@@ -106,6 +106,7 @@ class MatrixCalculatorView:
             {"text": "Polar Decomposition", "command": self.controller.polar_decomposition},
             {"text": "Determinant", "command": self.controller.determinant},
             {"text": "Inverse", "command": self.controller.inverse},
+            {"text": "Adjoint", "command": self.controller.adjoint},
             {"text": "Clear", "command": self.controller.clear_all},
         ]
 

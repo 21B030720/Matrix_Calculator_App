@@ -283,3 +283,19 @@ class Matrix:
         # Step 3: Extract the right half (the inverse matrix)
         inverse_matrix = [row[self.n:] for row in A]
         return Matrix(inverse_matrix)
+
+    def adjoint(self):
+        if self.rowLength != self.columnLength:
+            raise ValueError("Adjoint is defined only for square matrices.")
+
+        # Initialize a matrix to store cofactors
+        cofactors = [[0 for _ in range(self.columnLength)] for _ in range(self.rowLength)]
+
+        for i in range(self.rowLength):
+            for j in range(self.columnLength):
+                # Compute the cofactor: (-1)^(i+j) * determinant of the minor
+                cofactors[i][j] = ((-1) ** (i + j)) * self.minor(i, j).determinant()
+
+        # Return the transpose of the cofactor matrix as the adjoint
+        return Matrix(cofactors).transpose()
+
