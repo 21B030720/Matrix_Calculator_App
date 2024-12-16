@@ -7,10 +7,10 @@ from pymongo import MongoClient
 
 class MatrixCalculatorController:
     def __init__(self, view, db_uri="mongodb://localhost:27017", db_name="matrix_calculator"):
-        self.view = weakref.ref(view)  # Store a weak reference to the view
-        self.client = MongoClient(db_uri)  # MongoDB client
-        self.db = self.client[db_name]  # Database
-        self.collection = self.db['calculations']  # Collection to store matrix calculations
+        self.view = weakref.ref(view)
+        self.client = MongoClient(db_uri)
+        self.db = self.client[db_name]
+        self.collection = self.db['calculations']
 
     def get_view(self):
         view = self.view()
@@ -18,11 +18,11 @@ class MatrixCalculatorController:
             raise ReferenceError("View has been garbage collected.")
         return view
 
-    def fetch_logs(self):  # Fetch logs from MongoDB
+    def fetch_logs(self):
         view = self.get_view()
         logs = []
         try:
-            cursor = self.collection.find().sort('timestamp', -1)  # Sort by timestamp in descending order
+            cursor = self.collection.find().sort('timestamp', -1)
             for log_entry in cursor:
                 operation = log_entry.get('operation', 'Unknown Operation')
                 logs.append(f"{operation}: {log_entry.get('result', 'No result')}")

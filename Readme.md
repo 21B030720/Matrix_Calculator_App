@@ -4,6 +4,10 @@ Overview
 
 This project implements a usable Matrix class in Python, which provides a variety of mathematical operations for matrices, including addition, subtraction, multiplication, decomposition methods, and more(it will be increased in the future). For the final we added GUI calculator to use it in example
 
+ADDITIONAL:
+Install library by this command:
+pip install --index-url https://test.pypi.org/simple/ matrixlib-arslan-and-timur
+
 Features of the Matrix Class
 
 1. Basic Operations:
@@ -40,4 +44,8 @@ Moore-Penrose Pseudoinverse: Computes the pseudoinverse of a matrix.
 4. GUI
 
 Used Tkinter. We think everything will be clear
+
+
+
+
 
