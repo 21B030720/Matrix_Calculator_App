@@ -108,6 +108,7 @@ class MatrixCalculatorView:
             {"text": "SVD Decomposition", "command": self.controller.svd_decomposition},
             {"text": "QR Decomposition", "command": self.controller.qr_decomposition},
             {"text": "Gramm-Smidth", "command": self.controller.gram_schmidt_orthogonalization},
+            {"text": "Pseudoinverse", "command": self.controller.moore_penrose_pseudoinverse},
             {"text": "Determinant", "command": self.controller.determinant},
             {"text": "Inverse", "command": self.controller.inverse},
             {"text": "Clear", "command": self.controller.clear_all},

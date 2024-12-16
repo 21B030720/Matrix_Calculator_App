@@ -133,6 +133,9 @@ class MatrixCalculatorController:
 
     def determinant(self):  # Determinant Calculation
         self.decompose("Determinant")
+    
+    def moore_penrose_pseudoinverse(self):
+        self.decompose('Pseudoinverse')
 
     def inverse(self):  # Inverse Calculation
         self.decompose("Inverse")
@@ -178,6 +181,9 @@ class MatrixCalculatorController:
             elif operation == "Inverse":
                 inv = matrix.inverse()
                 result = f"Inverse:\n{inv}"
+            elif operation == "Pseudoinverse":
+                pinv = matrix.moore_penrose_pseudoinverse()
+                result = f"Pseudoinverse:\n{pinv}"
 
             view.display_result(result)
             self.log_calculation(operation, matrix, None, result)  # Log the result to MongoDB

@@ -47,6 +47,22 @@ class Matrix:
     
     def transpose(self):
         return Matrix([[self.matrix[j][i] for j in range(self.rowLength)] for i in range(self.columnLength)])
+    
+    def moore_penrose_pseudoinverse(self):
+        """Calculates the Moore-Penrose pseudoinverse without SVD."""
+        if self.rowLength >= self.columnLength:  # Tall or square matrix
+            # Compute (A^T A)^(-1) A^T
+            At = self.transpose()
+            AtA = At * self
+            AtA_inv = AtA.inverse()  # Inverse of A^T A
+            return AtA_inv * At
+        else:  # Wide matrix
+            # Compute A^T (A A^T)^(-1)
+            At = self.transpose()
+            AAt = self * At
+            AAt_inv = AAt.inverse()  # Inverse of A A^T
+            return At * AAt_inv
+
 
     # LU
     def LU_decomposition(self):
