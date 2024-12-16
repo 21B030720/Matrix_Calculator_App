@@ -1,9 +1,8 @@
 import tkinter as tk
-from tkinter import messagebox, ttk, simpledialog
+from tkinter import simpledialog
 from Matrix import Matrix
 import weakref
 from pymongo import MongoClient
-from datetime import datetime
 
 
 class MatrixCalculatorController:
@@ -41,6 +40,7 @@ class MatrixCalculatorController:
         }
         self.collection.insert_one(log_entry)
         self.update_logs_in_view()
+
     def update_logs_in_view(self):  # Update the logs in the view
         view = self.get_view()
         logs = self.fetch_logs()

@@ -283,24 +283,3 @@ class Matrix:
         # Step 3: Extract the right half (the inverse matrix)
         inverse_matrix = [row[self.n:] for row in A]
         return Matrix(inverse_matrix)
-
-
-# A = Matrix([
-#     [12, -51, 4, 3, 2],
-#     [6, 167, -68, 3, 2],
-#     [-4, 24, -41, 3, 2],
-#     [-1, 1, 0, 3, 2],
-#     [-1, 1, 0, 3, 2],
-#     [-1, 1, 0, 3, 2]
-# ])
-
-# Q, R = A.QR_decomposition()
-# print("Matrix Q:")
-# for row in Q.matrix:
-#     print(row)
-
-# print("\nMatrix R:")
-# for row in R.matrix:
-#     print(row)
-
-

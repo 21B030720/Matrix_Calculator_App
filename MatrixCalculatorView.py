@@ -1,6 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox, ttk
-from Matrix import Matrix
+from tkinter import messagebox
 from MatrixCalculatorController import MatrixCalculatorController
 
 class MatrixCalculatorView:
@@ -17,16 +16,16 @@ class MatrixCalculatorView:
         master.configure(bg=self.bg_color)
 
         self.matrix_entries = {'A': [], 'B': []}
-        
-        self.create_frames()
 
-        self.create_log_frame()  
+        self.create_frames()
 
     def create_frames(self):  # Basic Frames for Matrix
         self.create_size_input_frame()
         self.create_matrix_input_frames()
         self.create_operation_frame()
         self.create_result_frame()
+        self.create_log_frame()
+        self.controller.update_logs_in_view()
 
     def create_log_frame(self):  # Create Frame for Logs
         self.log_frame = tk.Frame(self.master, bg=self.bg_color, pady=10)
@@ -39,14 +38,9 @@ class MatrixCalculatorView:
         self.log_listbox.pack(padx=10, pady=10)
 
     def update_log_display(self, logs):  # Update Logs in Listbox
+        self.log_listbox.delete(0, tk.END)
         for log in logs:
             self.log_listbox.insert(tk.END, log)
-
-    def create_frames(self): # Basic Frames for Matrix
-        self.create_size_input_frame()
-        self.create_matrix_input_frames()
-        self.create_operation_frame()
-        self.create_result_frame()
 
     def create_size_input_frame(self): # Inputs for Sizes of Matrixes
         frame = tk.Frame(self.master, bg=self.bg_color, pady=10)
