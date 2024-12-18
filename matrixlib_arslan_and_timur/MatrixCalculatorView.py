@@ -7,7 +7,7 @@ class MatrixCalculatorView:
         self.master = master
         self.controller = MatrixCalculatorController(self)
         master.title("Matrix Calculator")
-        master.geometry("1200x700")
+        master.geometry("1600x700")
         master.resizable(False, False)
 
         self.bg_color = "#f0f0f0"
